@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude models and effort: team cheat sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F6F9; --surface:#FFFFFF; --ink:#131A2E; --muted:#59617A; --line:#DCE0EA;
+  --accent:#2748F0; --accent-soft:rgba(39,72,240,.10);
+  --teal:#14906B; --amber:#C27A12; --red:#D6453F; --sonnet:#14906B; --opus:#4B3FD1; --haiku:#7C8497; --fable:#C9468A;
+  --t1:rgba(20,144,107,.22); --t2:rgba(230,160,40,.22); --t3:rgba(230,160,40,.46); --t4:rgba(214,69,63,.28); --t5:rgba(214,69,63,.52);
+  --head:'Bricolage Grotesque','Figtree',system-ui,sans-serif;
+  --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0E1220; --surface:#171C2F; --ink:#E9ECF7; --muted:#9AA3BD; --line:#2A3250;
+    --accent:#8197FF; --accent-soft:rgba(129,151,255,.14);
+    --teal:#3CC79B; --amber:#E3A33A; --red:#F0716B; --sonnet:#3CC79B; --opus:#9A90FF; --haiku:#A3ABC0; --fable:#F078B2;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+h1,h2,h3{font-family:var(--head);font-weight:700;margin:0;letter-spacing:-.01em;line-height:1.15}
+h1{font-size:clamp(30px,5vw,46px)}
+h2{font-size:28px;margin-bottom:8px}
+h3{font-size:18px;font-weight:600}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.shell{display:grid;grid-template-columns:190px minmax(0,1fr);gap:56px;max-width:1100px;margin:0 auto;padding:36px 24px 80px}
+nav{position:sticky;top:32px;align-self:start}
+nav p{font-size:13px;color:var(--muted);margin-bottom:10px}
+nav a{display:block;padding:7px 12px;margin-left:-12px;border-radius:8px;color:var(--muted);text-decoration:none;font-size:15px}
+nav a:hover{color:var(--ink)}
+nav a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.lede{color:var(--muted);font-size:18px;max-width:58ch;margin-top:14px}
+.sec{padding:44px 0 8px;margin-top:36px;border-top:1px solid var(--line)}
+.sec.first{border-top:0;margin-top:0;padding-top:0}
+.sub{color:var(--muted);max-width:62ch;margin-bottom:22px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+.seg-label{font-size:14px;font-weight:600;margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.seg button{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.seg button[aria-disabled="true"]{opacity:.4;cursor:not-allowed}
+.result{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;border-top:1px solid var(--line);padding-top:20px}
+.meter{display:flex;gap:5px}
+.meter span{width:22px;height:54px;border-radius:5px;background:var(--line)}
+.result h3{font-size:24px}
+.result p{color:var(--muted);margin-top:6px;max-width:60ch}
+.model-row{display:grid;grid-template-columns:150px minmax(0,1fr) 190px;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:10px}
+.model-row small{display:block;color:var(--muted);font-size:13px}
+.model-row b{font-family:var(--head);font-size:18px}
+.bar{height:9px;background:var(--bg);border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px}
+.eff{font-size:13px;color:var(--muted);margin-top:6px}.eff b{color:var(--ink);font-weight:600}
+.bar-label{font-size:13px;color:var(--muted);margin-top:5px;font-weight:500}
+.note{font-size:14px;color:var(--muted);margin-top:14px;max-width:68ch}
+.stairs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:end}
+.stairs div.step{display:flex;flex-direction:column;justify-content:flex-end}
+.stairs .blk{border-radius:7px}
+.stairs b{margin-top:10px;font-family:var(--head);font-size:17px}
+.stairs small{color:var(--muted);font-size:13px;line-height:1.4;margin-top:2px}
+.grid{display:grid;grid-template-columns:110px repeat(5,minmax(0,1fr));gap:6px;align-items:center}
+.grid .h{text-align:center;font-size:13px;font-weight:600;color:var(--muted)}
+.grid .rl b{display:block;font-size:15px}
+.grid .rl small{color:var(--muted);font-size:12px}
+.cell{height:46px;border:0;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink)}
+.cell.t1{background:var(--t1)}.cell.t2{background:var(--t2)}.cell.t3{background:var(--t3)}.cell.t4{background:var(--t4)}.cell.t5{background:var(--t5)}
+.cell[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:-3px}
+.cell.start::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:7px;vertical-align:middle}
+.span5{grid-column:span 5}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.caption{margin-top:18px;padding:14px 16px;background:var(--accent-soft);border-radius:10px;font-size:15px}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--body);font-size:12px}
+.chart .pl{font-weight:600;fill:var(--ink)}
+.take{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:20px}
+.take div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:15px}
+.take b{display:block;font-family:var(--head);font-size:16px;margin-bottom:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card svg{width:28px;height:28px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}
+.card p{font-size:15px;color:var(--muted);margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.chip{padding:7px 14px;border-radius:999px;font-size:14px;font-weight:500;border:1px solid var(--line);background:var(--surface)}
+.chip.use{border:2px solid var(--accent);color:var(--accent);font-weight:600}
+.chip.old{color:var(--muted);text-decoration:line-through;background:transparent}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.check{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.check:last-child{border-bottom:0}
+.check input{margin-top:5px;width:18px;height:18px;accent-color:var(--accent)}
+.check span{font-size:15px}
+.check input:checked + span{color:var(--muted);text-decoration:line-through}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);max-width:70ch}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:0;padding:0 16px 60px}
+  nav{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0;margin:0 -16px 20px;border-bottom:1px solid var(--line);display:flex;gap:6px;overflow-x:auto;padding-left:16px}
+  nav p{display:none}
+  nav a{white-space:nowrap;margin:0;padding:6px 12px}
+  .model-row{grid-template-columns:minmax(0,1fr);gap:10px}
+  .grid{grid-template-columns:78px repeat(5,minmax(0,1fr));gap:4px}
+  .cell{font-size:11px;padding:0 2px;height:42px}
+  .cell.start::after{display:none}
+  .result{grid-template-columns:minmax(0,1fr)}
+  h2{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav aria-label="Sections">
+  <p>On this page</p>
+  <a href="#try">Try it</a>
+  <a href="#models">The models</a>
+  <a href="#effort">The effort dial</a>
+  <a href="#grid">Burn grid</a>
+  <a href="#value">Quality vs cost</a>
+  <a href="#eaters">What eats tokens</a>
+  <a href="#older">Older models</a>
+  <a href="#habits">Habits</a>
+</nav>
+
+<main>
+  <section class="sec first" id="try">
+    <h1>Pick a model and an effort. See how fast it drains your limit.</h1>
+    <p class="lede">Two dials decide how quickly you use up your weekly Claude limit: which model you pick, and how hard it thinks. Try a combination.</p>
+    <div class="panel" style="margin-top:26px">
+      <div class="seg-label" id="mlabel">Model</div>
+      <div class="seg" role="group" aria-labelledby="mlabel" id="modelSeg"></div>
+      <div class="seg-label" id="elabel">Effort</div>
+      <div class="seg" role="group" aria-labelledby="elabel" id="effortSeg"></div>
+      <div class="result" aria-live="polite">
+        <div class="meter" id="meter" aria-hidden="true"></div>
+        <div>
+          <h3 id="rTitle"></h3>
+          <p id="rText"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="models">
+    <h2>Dial 1: the model</h2>
+    <p class="sub">The model is which brain you pick. Bigger brains handle harder work and cost more for every token they read or write.</p>
+    <div class="model-row">
+      <div><b>Haiku 4.5</b><small>Fastest, lightest</small></div>
+      <div><p>Quick, simple, repetitive jobs like renaming, tagging, and short rewrites.</p><p class="eff"><b>Effort:</b> No effort setting. It always runs light.</p></div>
+      <div><div class="bar"><i style="width:10%;background:var(--teal)"></i></div><div class="bar-label">1x, cheapest</div></div>
+    </div>
+    <div class="model-row">
+      <div><b>Sonnet 5.5</b><small>The workhorse</small></div>
+      <div><p>Most design, writing, and coding tasks, especially well-defined ones.</p><p class="eff"><b>Effort:</b> Low to Max. Medium for well-defined work, High when it misses. Skip Max.</p></div>
+      <div><div class="bar"><i style="width:20%;background:var(--teal)"></i></div><div class="bar-label">2x</div></div>
+    </div>
+    <div class="model-row">
+      <div><b>Opus 5.5</b><small>Careful thinker</small></div>
+      <div><p>Complex, multi-step problems where quality and judgment matter more than speed.</p><p class="eff"><b>Effort:</b> Low to Max. Medium is its default and a strong start. Extra gets close to Max for less.</p></div>
+      <div><div class="bar"><i style="width:40%;background:var(--amber)"></i></div><div class="bar-label">4x</div></div>
+    </div>
+    <div class="model-row">
+      <div><b>Fable 5.1</b><small>Most capable</small></div>
+      <div><p>The hardest, longest jobs, like big agent runs across many files. Needs paid usage credits.</p><p class="eff"><b>Effort:</b> Low to Max. Try Low or Medium first. Max adds little but costs about three times as much as Low.</p></div>
+      <div><div class="bar"><i style="width:100%;background:var(--red)"></i></div><div class="bar-label">10x, use sparingly</div></div>
+    </div>
+    <p class="note">The multipliers compare list price per token, with Haiku as 1x. Per task the gap is smaller, because bigger efforts make a model write more. See "Quality vs cost" below.</p>
+  </section>
+
+  <section class="sec" id="effort">
+    <h2>Dial 2: the effort</h2>
+    <p class="sub">Effort is how long Claude thinks before it answers. More thinking gives more thorough answers, but slower replies and a faster-draining limit. It sits next to the model picker. Haiku 4.5 has no effort setting.</p>
+    <div class="panel">
+      <div class="stairs">
+        <div class="step"><div class="blk" style="height:14px;background:var(--teal)"></div><b>Low</b><small>Simple, known jobs</small></div>
+        <div class="step"><div class="blk" style="height:30px;background:var(--teal)"></div><b>Medium</b><small>Everyday work. Start here</small></div>
+        <div class="step"><div class="blk" style="height:46px;background:var(--amber)"></div><b>High</b><small>When Medium misses</small></div>
+        <div class="step"><div class="blk" style="height:62px;background:var(--red)"></div><b>Extra</b><small>When High misses</small></div>
+        <div class="step"><div class="blk" style="height:78px;background:var(--red)"></div><b>Max</b><small>One really hard task</small></div>
+      </div>
+    </div>
+    <p class="note">Rule of thumb: start on Medium and only go up after an answer misses. Taller bar means more thinking and more limit used. Check what your picker defaults to, because it differs between apps.</p>
+  </section>
+
+  <section class="sec" id="grid">
+    <h2>Burn grid</h2>
+    <p class="sub">Every combination, ranked by how fast it drains your limit. Click a cell for details.</p>
+    <div class="panel">
+      <div class="grid" id="gridEl"></div>
+      <div class="legend">
+        <span><i style="background:var(--t1)"></i>Light</span>
+        <span><i style="background:var(--t2)"></i>Moderate</span>
+        <span><i style="background:var(--t3)"></i>Heavy</span>
+        <span><i style="background:var(--t4)"></i>Very heavy</span>
+        <span><i style="background:var(--t5)"></i>Heaviest</span>
+        <span><i style="background:var(--accent);border-radius:50%;width:9px;height:9px"></i>Good starting point</span>
+      </div>
+      <div class="caption" id="gridCaption" aria-live="polite"></div>
+    </div>
+    <p class="note">A rough ordering that combines each model's price per token with how deeply it thinks. It is not measured. Anthropic describes effort as a guide, not a strict token budget.</p>
+  </section>
+
+  <section class="sec" id="value">
+    <h2>Does the bigger model always win?</h2>
+    <p class="sub">Not on cost, and not always on quality. Each line runs from Low effort on the left to Max effort on the right. Higher means better answers, further left means cheaper per task. Hover a dot for details.</p>
+    <div class="panel">
+      <svg class="chart" id="chart" viewBox="0 0 680 380" role="img" aria-label="Scatter chart of quality score against cost per task for Haiku 4.5, Sonnet 5.5, Opus 5.5, and Fable 5.1 across effort levels."></svg>
+      <div class="legend" style="margin-top:6px">
+        <span><i style="background:var(--haiku);border-radius:50%"></i>Haiku 4.5 (no effort setting)</span>
+        <span><i style="background:var(--sonnet);border-radius:50%"></i>Sonnet 5.5</span>
+        <span><i style="background:var(--opus);border-radius:50%"></i>Opus 5.5</span>
+        <span><i style="background:var(--fable);border-radius:50%"></i>Fable 5.1</span>
+      </div>
+    </div>
+    <div class="take">
+      <div><b>Haiku is cheapest, with a much lower score</b>About 17 for about $0.21 per task. Great for simple jobs, not for complex ones.</div>
+      <div><b>Opus Low is about Sonnet Medium</b>Scores 42 and 41, costing $0.55 and $0.59 per task. The cheaper model isn't always cheaper.</div>
+      <div><b>Sonnet High scores a bit above Opus Low</b>47 against 42, but it costs about double: $1.12 against $0.55.</div>
+      <div><b>Opus Medium beats Sonnet High</b>51 against 47 for a little more: $1.34 against $1.12. Medium is Opus's default.</div>
+      <div><b>Sonnet Max is poor value</b>56 for $7.67. Opus at Extra also scores 56 for $3.46, and Opus at Max scores 58 for $5.98.</div>
+      <div><b>Fable doesn't win this test</b>At Max it scores 53 for $7.63. Anthropic says Opus 5.5 matches Fable 5.1 for most tasks. Fable is for the hardest, longest jobs.</div>
+    </div>
+    <p class="note">Scores are the Artificial Analysis Intelligence Index, a broad mix of tasks. Cost is what it cost to run those test tasks, not a price you pay. Both were measured independently in 2026. Haiku 4.5 was measured in reasoning mode, and its figure comes from an earlier run. Anthropic says Opus stays clearly stronger on open-ended work that needs sustained judgment.</p>
+  </section>
+
+  <section class="sec" id="eaters">
+    <h2>What else eats tokens</h2>
+    <p class="sub">These drain your limit on any model, at any effort.</p>
+    <div class="cards">
+      <div class="card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v10H9l-5 4z"/></svg>
+        <h3>Long chats</h3>
+        <p>Claude re-reads the whole conversation with every message. Start a fresh chat for each new task.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M4 10h16M10 10v10"/></svg>
+        <h3>Big Figma selections and files</h3>
+        <p>Point Claude at one frame, not the whole page, and attach only what the task needs.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        <h3>Long answers</h3>
+        <p>What Claude writes costs about 5x more than what you send. Ask for short answers when you can.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="older">
+    <h2>Why only these four models</h2>
+    <p class="sub">The model picker lists a lot of old versions. Ignore them. Claude comes in four families, and you only need the newest version of each.</p>
+    <div class="seg-label">Use these</div>
+    <div class="chips">
+      <span class="chip use">Haiku 4.5</span><span class="chip use">Sonnet 5.5</span><span class="chip use">Opus 5.5</span><span class="chip use">Fable 5.1</span>
+    </div>
+    <div class="seg-label">Skip these</div>
+    <div class="chips">
+      <span class="chip old">Fable 5</span><span class="chip old">Opus 5</span><span class="chip old">Opus 4.8</span><span class="chip old">Opus 4.7</span><span class="chip old">Opus 4.6</span><span class="chip old">Opus 3</span><span class="chip old">Sonnet 4.6</span>
+    </div>
+    <p class="note">The older ones stay in the list for people who need an exact old version. For us there's no reason to pick them: the newer version of each family costs the same or less. Opus 5.5 is cheaper than Opus 5, and Fable 5.1 costs the same as Fable 5. If your picker only shows Sonnet 5, pick the newest Sonnet you have.</p>
+  </section>
+
+  <section class="sec" id="habits">
+    <h2>Habits that protect your weekly limit</h2>
+    <div class="two" style="margin-top:18px">
+      <div class="panel">
+        <h3>Before you start</h3>
+        <label class="check"><input type="checkbox"><span>Check which model you're using</span></label>
+        <label class="check"><input type="checkbox"><span>Check the effort setting. Start on Medium</span></label>
+        <label class="check"><input type="checkbox"><span>Match the model to the task. Simple work doesn't need the biggest model</span></label>
+        <label class="check"><input type="checkbox"><span>Start a fresh chat for a new task</span></label>
+      </div>
+      <div class="panel">
+        <h3>When your limit is close</h3>
+        <label class="check"><input type="checkbox"><span>Leave bigger tasks for next week</span></label>
+        <label class="check"><input type="checkbox"><span>Plan other work in the meantime</span></label>
+        <label class="check"><input type="checkbox"><span>Drop to a lighter model or lower effort for what's left</span></label>
+        <label class="check"><input type="checkbox"><span>Skip Fable and Max unless the task truly needs them</span></label>
+      </div>
+    </div>
+  </section>
+
+  <footer>Prices and model names as of October 2026, from Anthropic's published pricing and docs plus third-party trackers. Check Anthropic's pricing page before quoting exact figures. Burn levels are a rough guide, not measurements.</footer>
+</main>
+</div>
+
+<script>
+const EFFORTS=['Low','Medium','High','Extra','Max'];
+const MODELS=[
+ {id:'haiku',name:'Haiku 4.5',base:1,effort:false,note:'Best for quick, simple, repetitive jobs like renaming, tagging, and short rewrites. It has no effort setting, so it always runs light.'},
+ {id:'sonnet',name:'Sonnet 5.5',base:2,effort:true,note:'The workhorse for most design, writing, and coding. Best on well-defined tasks. At Max it is poor value, because Opus at Extra scores the same for less.'},
+ {id:'opus',name:'Opus 5.5',base:3,effort:true,note:'Best for complex, multi-step problems where quality and judgment matter. Medium is its default and a strong starting point.'},
+ {id:'fable',name:'Fable 5.1',base:4,effort:true,note:'The most capable, for the hardest and longest jobs. It needs paid usage credits. Lower efforts still perform well, so try Low or Medium first.'}
+];
+const TIERS=[
+ {n:'Light',c:'var(--t1)',m:'var(--teal)',t:'Safe for everyday and repetitive work. It barely dents your limit.'},
+ {n:'Moderate',c:'var(--t2)',m:'var(--amber)',t:'Fine for regular work. Watch how many of these you run.'},
+ {n:'Heavy',c:'var(--t3)',m:'var(--amber)',t:'Use it for work that matters, and don\'t leave it on by default.'},
+ {n:'Very heavy',c:'var(--t4)',m:'var(--red)',t:'Save it for hard problems, then switch back down.'},
+ {n:'Heaviest',c:'var(--t5)',m:'var(--red)',t:'The fastest way to use up your weekly limit. Use it for one hard task at a time.'}
+];
+function tierIdx(m,e){ if(!m.effort) return 0; const s=m.base+e; return s<=3?0:s===4?1:s===5?2:s===6?3:4; }
+function describe(m,e){
+  const t=TIERS[tierIdx(m,e)];
+  const head=m.effort? m.name+' on '+EFFORTS[e] : m.name;
+  return {title:head+': '+t.n.toLowerCase(), text:t.t+' '+m.note, tier:t};
+}
+let sel={m:1,e:1};
+
+const modelSeg=document.getElementById('modelSeg');
+const effortSeg=document.getElementById('effortSeg');
+MODELS.forEach((m,i)=>{
+  const b=document.createElement('button');b.type='button';b.textContent=m.name;
+  b.addEventListener('click',()=>select(i,sel.e));modelSeg.appendChild(b);
+});
+EFFORTS.forEach((n,i)=>{
+  const b=document.createElement('button');b.type='button';b.textContent=n;
+  b.addEventListener('click',()=>{ if(!MODELS[sel.m].effort) return; select(sel.m,i); });
+  effortSeg.appendChild(b);
+});
+const meter=document.getElementById('meter');
+for(let i=0;i<5;i++){meter.appendChild(document.createElement('span'));}
+
+const gridEl=document.getElementById('gridEl');
+const cells=[];
+function addEl(tag,cls,txt){const d=document.createElement(tag);if(cls)d.className=cls;if(txt!==undefined)d.textContent=txt;return d;}
+gridEl.appendChild(addEl('div'));
+EFFORTS.forEach(n=>gridEl.appendChild(addEl('div','h',n)));
+const mult={haiku:'1x',sonnet:'2x',opus:'4x',fable:'10x'};
+MODELS.forEach((m,mi)=>{
+  const rl=addEl('div','rl');rl.appendChild(addEl('b','',m.name));rl.appendChild(addEl('small','',mult[m.id]));
+  gridEl.appendChild(rl);
+  if(!m.effort){
+    const b=addEl('button','cell t1 span5','No effort setting. Always light');b.type='button';
+    b.addEventListener('click',()=>select(mi,sel.e));
+    gridEl.appendChild(b);cells.push({b,mi,e:null});
+  } else {
+    EFFORTS.forEach((n,ei)=>{
+      const t=tierIdx(m,ei);
+      const start=(m.id==='sonnet'||m.id==='opus')&&ei===1;
+      const b=addEl('button','cell t'+(t+1)+(start?' start':''),TIERS[t].n);b.type='button';
+      b.setAttribute('aria-label',m.name+' on '+n+': '+TIERS[t].n+(start?', good starting point':''));
+      b.addEventListener('click',()=>select(mi,ei));
+      gridEl.appendChild(b);cells.push({b,mi,e:ei});
+    });
+  }
+});
+
+function select(mi,ei){
+  sel={m:mi,e:ei};
+  const m=MODELS[mi];const d=describe(m,ei);
+  [...modelSeg.children].forEach((b,i)=>b.setAttribute('aria-pressed',i===mi));
+  [...effortSeg.children].forEach((b,i)=>{
+    b.setAttribute('aria-pressed',m.effort&&i===ei);
+    b.setAttribute('aria-disabled',!m.effort);
+  });
+  const ti=tierIdx(m,ei);
+  [...meter.children].forEach((s,i)=>{s.style.background=i<=ti?d.tier.m:'';});
+  document.getElementById('rTitle').textContent=d.title;
+  document.getElementById('rText').textContent=d.text;
+  cells.forEach(c=>c.b.setAttribute('aria-pressed',c.mi===mi&&(c.e===null||c.e===ei)));
+  document.getElementById('gridCaption').textContent=d.title.charAt(0).toUpperCase()+d.title.slice(1)+'. '+d.text;
+}
+select(1,1);
+
+(function chart(){
+  const svg=document.getElementById('chart'),NS='http://www.w3.org/2000/svg';
+  const L=54,R=26,T=20,B=44,W=680,H=380,pw=W-L-R,ph=H-T-B;
+  const x0=Math.log(0.15),x1=Math.log(12),y0=10,y1=60;
+  const X=c=>L+(Math.log(c)-x0)/(x1-x0)*pw, Y=v=>T+(1-(v-y0)/(y1-y0))*ph;
+  function el(n,a,t){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!==undefined)e.textContent=t;svg.appendChild(e);return e;}
+  [10,20,30,40,50,60].forEach(v=>{el('line',{x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'var(--line)','stroke-width':1});el('text',{x:L-10,y:Y(v)+4,'text-anchor':'end'},v);});
+  [0.2,0.5,1,2,5,10].forEach(v=>{el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,stroke:'var(--line)','stroke-width':1,'stroke-dasharray':'3 4'});el('text',{x:X(v),y:T+ph+20,'text-anchor':'middle'},'$'+v);});
+  el('text',{x:L+pw/2,y:H-6,'text-anchor':'middle'},'Cost per task, log scale');
+  el('text',{x:14,y:T+ph/2,'text-anchor':'middle',transform:'rotate(-90 14 '+(T+ph/2)+')'},'Quality score');
+  el('text',{x:L+8,y:T+14},'Better: up and to the left');
+  const data=[
+   {name:'Haiku 4.5',col:'var(--haiku)',pts:[[null,0.21,17]]},
+   {name:'Sonnet 5.5',col:'var(--sonnet)',pts:[['Low',0.42,36],['Medium',0.59,41],['High',1.12,47],['Extra',2.75,52],['Max',7.67,56]],first:[0,20,'middle'],last:[10,4,'start']},
+   {name:'Opus 5.5',col:'var(--opus)',pts:[['Low',0.55,42],['Medium',1.34,51],['High',1.82,54],['Extra',3.46,56],['Max',5.98,58]],first:[0,-11,'middle'],last:[0,-11,'middle']},
+   {name:'Fable 5.1',col:'var(--fable)',pts:[['Low',2.37,47],['Medium',2.98,49],['High',3.91,51],['Extra',5.98,53],['Max',7.63,53]],first:[0,20,'middle'],last:[10,4,'start']}
+  ];
+  data.forEach(s=>{
+    if(s.pts.length>1) el('polyline',{points:s.pts.map(p=>X(p[1])+','+Y(p[2])).join(' '),fill:'none',stroke:s.col,'stroke-width':2,opacity:.55});
+    s.pts.forEach((p,i)=>{
+      const c=el('circle',{cx:X(p[1]),cy:Y(p[2]),r:6,fill:s.col});
+      const t=document.createElementNS(NS,'title');
+      t.textContent=s.name+(p[0]?' at '+p[0]:'')+': score '+p[2]+', about $'+p[1].toFixed(2)+' per task';
+      c.appendChild(t);
+      if(!p[0]){ el('text',{x:X(p[1])+11,y:Y(p[2])+4,'text-anchor':'start',class:'pl'},'Haiku'); return; }
+      const pos=i===0?s.first:(i===s.pts.length-1?s.last:null);
+      if(pos) el('text',{x:X(p[1])+pos[0],y:Y(p[2])+pos[1],'text-anchor':pos[2],class:'pl'},p[0]);
+    });
+  });
+})();
+
+const links=[...document.querySelectorAll('nav a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting){ links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)); } });
+},{rootMargin:'-20% 0px -70% 0px'});
+secs.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
